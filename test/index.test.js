@@ -59,89 +59,118 @@ describe('AjaxLimited', function() {
   });
 
   describe('integration tests', function() {
-    makeStub.each($, 'ajax', function(url, options) {
-      if(!options) {
-        options = url || {};
-        url = options.url;
-      }
+    describe('when AJAX is successful', function() {
+      beforeEach(function() {
+        this.stats = {
+          requests: 0,
+          getRequests: 0,
+          putRequests: 0,
+          postRequests: 0,
+          patchRequests: 0,
+        };
+      });
 
-      this.stats.requests++;
-      var method = (options.type || options.method || 'get').toLowerCase();
-      this.stats[method + 'Requests']++;
-      return Promise.resolve({});
-    }, true);
+      afterEach(function() {
+        this.ajaxLimited.restore();
+      });
 
-    beforeEach(function() {
-      this.ajaxLimited = new AjaxLimited();
-      this.ajaxLimited.configure($, DEFAULT_OPTIONS);
-    });
+      makeStub.each($, 'ajax', function(url, options) {
+        if(!options) {
+          options = url || {};
+          url = options.url;
+        }
 
-    afterEach(function() {
-      this.ajaxLimited.restore();
-    });
+        this.stats.requests++;
+        var method = (options.type || options.method || 'get').toLowerCase();
+        this.stats[method + 'Requests']++;
+        return Promise.resolve({});
+      }, true);
 
-    beforeEach(function() {
-      this.stats = {
-        requests: 0,
-        getRequests: 0,
-        putRequests: 0,
-        postRequests: 0,
-        patchRequests: 0,
-      };
-    });
+      beforeEach(function() {
+        this.ajaxLimited = new AjaxLimited();
+        this.ajaxLimited.configure($, DEFAULT_OPTIONS);
+      });
 
-    it('$.ajax was patched to return a bluebird promise', function() {
-      var p = $.ajax('http://localhost:3000');
-      p.should.be.instanceof(Promise);
-      return p;
-    });
+      it('$.ajax was patched to return a bluebird promise', function() {
+        var p = $.ajax('http://localhost:3000');
+        p.should.be.instanceof(Promise);
+        return p;
+      });
 
-    it('$.ajax is limited', function() {
-      this.timeout(10000);
-      var ps = [];
-      var p;
-      for(var i = 0; i < 20; i++) {
-        p = $.ajax('http://localhost:3000').catch(function() {});
-        ps.push(p);
-      }
+      it('$.ajax is limited', function() {
+        this.timeout(10000);
+        var ps = [];
+        var p;
+        for(var i = 0; i < 20; i++) {
+          p = $.ajax('http://localhost:3000').catch(function() {});
+          ps.push(p);
+        }
 
-      var _this = this;
-      return Promise.delay(3000).then(function() {
-        _this.stats.requests.should.be.below(10);
-        return Promise.all(ps);
+        var _this = this;
+        return Promise.delay(3000).then(function() {
+          _this.stats.requests.should.be.below(10);
+          return Promise.all(ps);
+        });
+      });
+
+      it('we can limit $.ajax per method', function() {
+        this.timeout(20000);
+        var ps = [];
+        var p;
+        var start = new Date();
+        var timer = Promise.delay(3000);
+        this.ajaxLimited.get({
+          bucketSize: 2,
+          tokensPerInterval: 2,
+        });
+
+        for(var i = 0; i < 10; i++) {
+          p = $.ajax({
+            url: 'http://localhost:3000',
+            type: 'POST',
+            data: 'hello'
+          }).catch(_.noop);
+          ps.push(p);
+          p = $.ajax('http://localhost:3000').catch(_.noop);
+          ps.push(p);
+        }
+
+        var _this = this;
+
+        return timer.then(function() {
+          var elapsed = new Date().getTime() - start;
+          var ncycles = elapsed / 3000;
+          _this.stats.requests.should.be.below(10 * ncycles);
+          _this.stats.getRequests.should.be.below(3 * ncycles);
+          return Promise.all(ps);
+        });
       });
     });
 
-    it('we can limit $.ajax per method', function() {
-      this.timeout(20000);
-      var ps = [];
-      var p;
-      var start = new Date();
-      var timer = Promise.delay(3000);
-      this.ajaxLimited.get({
-        bucketSize: 2,
-        tokensPerInterval: 2,
+    describe('when AJAX gives us weird errors', function() {
+      beforeEach(function() {
+        this.ajaxLimited = new AjaxLimited();
+        this.ajaxLimited.configure($, DEFAULT_OPTIONS);
       });
 
-      for(var i = 0; i < 10; i++) {
-        p = $.ajax({
-          url: 'http://localhost:3000',
-          type: 'POST',
-          data: 'hello'
-        }).catch(_.noop);
-        ps.push(p);
-        p = $.ajax('http://localhost:3000').catch(_.noop);
-        ps.push(p);
-      }
+      afterEach(function() {
+        this.ajaxLimited.restore();
+      });
 
-      var _this = this;
+      it('triggers a "server:offline" event', function() {
+       var eventFired = false;
+       this.ajaxLimited.on('server:offline', function() {
+         eventFired = true;
+       });
 
-      return timer.then(function() {
-        var elapsed = new Date().getTime() - start;
-        var ncycles = elapsed / 3000;
-        _this.stats.requests.should.be.below(10 * ncycles);
-        _this.stats.getRequests.should.be.below(3 * ncycles);
-        return Promise.all(ps);
+        return this.ajaxLimited.ajax('http://localhost:3000')
+          .then(
+            function() {
+            },
+            function(err) {
+              console.log(err.status)
+            }
+          );
       });
     });
   });
