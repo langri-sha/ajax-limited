@@ -1,0 +1,23 @@
+{
+  "name": "ajax-limited",
+  "version": "1.0.0",
+  "description": "A rate-limited version of $.ajax with support for slow start on wakeup.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Pedro Tacla Yamada",
+  "dependencies": {
+    "limiter": "^1.0.5"
+  },
+  "peerDependencies": {
+    "backbone": "^1.2.1"
+  },
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "jquery": "^2.1.4",
+    "lodash": "^3.9.3",
+    "mocha": "^2.2.5",
+    "najax": "^0.1.5"
+  }
+}
