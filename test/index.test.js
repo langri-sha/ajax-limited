@@ -1,16 +1,21 @@
 'use strict';
 /* jshint -W079 */
 /* global describe, it, beforeEach, afterEach */
-var http = require('http');
 var $ = require('jquery');
 var Promise = require('bluebird');
 var _ = require('lodash');
-var ajaxLimited = require('..');
 var chai = require('chai');
-var najax = require('najax');
+var makeStub = require('mocha-make-stub');
+var ajaxLimited = require('..');
+
+if(!process.browser) {
+  var najax = require('najax');
+  $.ajax = najax; // For testing on Node.js
+} else {
+  require('phantomjs-polyfill');
+}
 
 chai.should();
-$.ajax = najax; // For testing on Node.js
 
 var DEFAULT_OPTIONS = {
   bucketSize: 9,
@@ -54,6 +59,18 @@ describe('AjaxLimited', function() {
   });
 
   describe('integration tests', function() {
+    makeStub.each($, 'ajax', function(url, options) {
+      if(!options) {
+        options = url || {};
+        url = options.url;
+      }
+
+      this.stats.requests++;
+      var method = (options.type || options.method || 'get').toLowerCase();
+      this.stats[method + 'Requests']++;
+      return Promise.resolve({});
+    }, true);
+
     beforeEach(function() {
       this.ajaxLimited = new AjaxLimited();
       this.ajaxLimited.configure($, DEFAULT_OPTIONS);
@@ -63,7 +80,7 @@ describe('AjaxLimited', function() {
       this.ajaxLimited.restore();
     });
 
-    beforeEach(function(done) {
+    beforeEach(function() {
       this.stats = {
         requests: 0,
         getRequests: 0,
@@ -71,19 +88,6 @@ describe('AjaxLimited', function() {
         postRequests: 0,
         patchRequests: 0,
       };
-
-      var _this = this;
-      this.server = http.createServer(function(req, res) {
-        _this.stats.requests++;
-        _this.stats[req.method.toLowerCase() + 'Requests']++;
-        res.write('Hello World');
-        res.end();
-      });
-      this.server.listen(3000, done);
-    });
-
-    afterEach(function(done) {
-      this.server.close(done);
     });
 
     it('$.ajax was patched to return a bluebird promise', function() {
@@ -93,7 +97,7 @@ describe('AjaxLimited', function() {
     });
 
     it('$.ajax is limited', function() {
-      this.timeout = 5000;
+      this.timeout(10000);
       var ps = [];
       var p;
       for(var i = 0; i < 20; i++) {
@@ -109,6 +113,7 @@ describe('AjaxLimited', function() {
     });
 
     it('we can limit $.ajax per method', function() {
+      this.timeout(20000);
       var ps = [];
       var p;
       var start = new Date();

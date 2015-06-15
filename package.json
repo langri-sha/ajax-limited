@@ -4,7 +4,8 @@
   "description": "A rate-limited version of $.ajax with support for slow start on wakeup.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "browser-test": "browserify-test"
   },
   "author": "Pedro Tacla Yamada",
   "dependencies": {
@@ -14,10 +15,14 @@
     "backbone": "^1.2.1"
   },
   "devDependencies": {
+    "browserify": "^10.2.4",
+    "browserify-test": "^1.2.0",
     "chai": "^3.0.0",
     "jquery": "^2.1.4",
     "lodash": "^3.9.3",
     "mocha": "^2.2.5",
-    "najax": "^0.1.5"
+    "mocha-make-stub": "^2.3.2",
+    "najax": "^0.1.5",
+    "phantomjs-polyfill": "0.0.1"
   }
 }
