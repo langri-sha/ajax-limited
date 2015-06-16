@@ -146,32 +146,5 @@ describe('AjaxLimited', function() {
         });
       });
     });
-
-    describe('when AJAX gives us weird errors', function() {
-      beforeEach(function() {
-        this.ajaxLimited = new AjaxLimited();
-        this.ajaxLimited.configure($, DEFAULT_OPTIONS);
-      });
-
-      afterEach(function() {
-        this.ajaxLimited.restore();
-      });
-
-      it('triggers a "server:offline" event', function() {
-       var eventFired = false;
-       this.ajaxLimited.on('server:offline', function() {
-         eventFired = true;
-       });
-
-        return this.ajaxLimited.ajax('http://localhost:3000')
-          .then(
-            function() {
-            },
-            function(err) {
-              console.log(err.status)
-            }
-          );
-      });
-    });
   });
 });
