@@ -109,6 +109,7 @@ describe('AjaxLimited', function() {
         var _this = this;
         return Promise.delay(3000).then(function() {
           _this.stats.requests.should.be.below(10);
+          _this.ajaxLimited.bucket.tokensPerInterval = 10000;
           return Promise.all(ps);
         });
       });
@@ -142,6 +143,8 @@ describe('AjaxLimited', function() {
           var ncycles = elapsed / 3000;
           _this.stats.requests.should.be.below(10 * ncycles);
           _this.stats.getRequests.should.be.below(3 * ncycles);
+          _this.ajaxLimited.bucket.tokensPerInterval = 10000;
+          _this.ajaxLimited._routes.get.tokensPerInterval = 10000;
           return Promise.all(ps);
         });
       });
