@@ -4,25 +4,40 @@
   "description": "A rate-limited version of $.ajax with support for slow start on wakeup.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha",
-    "browser-test": "browserify-test"
+    "test": "mocha --require blanket -R mocha-spec-cov-alt",
+    "browser-test": "browserify-test",
+    "generate-coverage": "mocha --require blanket -R html-cov > coverage.html"
   },
   "author": "Pedro Tacla Yamada",
   "dependencies": {
-    "limiter": "^1.0.5"
-  },
-  "peerDependencies": {
-    "backbone": "^1.2.1"
+    "limiter": "^1.0.5",
+    "lodash": "^3.9.3"
   },
   "devDependencies": {
+    "blanket": "^1.1.7",
     "browserify": "^10.2.4",
     "browserify-test": "^1.2.0",
     "chai": "^3.0.0",
     "jquery": "^2.1.4",
-    "lodash": "^3.9.3",
     "mocha": "^2.2.5",
     "mocha-make-stub": "^2.3.2",
+    "mocha-spec-cov-alt": "^0.3.0",
     "najax": "^0.1.5",
     "phantomjs-polyfill": "0.0.1"
+  },
+  "config": {
+    "blanket": {
+      "data-cover-never": [
+        "node_modules",
+        "test"
+      ],
+      "pattern": [
+        "lib"
+      ],
+      "spec-cov": {
+        "threshold": 80,
+        "localThreshold": 80
+      }
+    }
   }
 }
