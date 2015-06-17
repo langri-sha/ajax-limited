@@ -19,3 +19,60 @@ ajaxLimited.get({
   interval: 3000,
 });
 ```
+
+## Documentation
+### AjaxLimited
+
+Manages the set of `TokenBucket`s limitting AJAX requests.
+
+#### Params:
+
+* **Object** *[options]* Optional root `TokenBucket` options
+
+### .prototype.configure(target, [options])
+
+Configures rate limitting into an object.
+
+#### Params:
+
+* **Object** *target*
+* **Object** *[options]*
+
+### .prototype.restore([target])
+
+Restores the original ajax method on the configured targets or a target
+object.
+
+#### Params:
+
+* **Object** *[target]*
+
+#### Return:
+
+* **Function** originalAjax
+
+### .prototype.slowStart(options)
+
+Receives initial options for each HTTP method (or all of them), modifies
+buckets so they start with them and slowly transitions rate limitting until
+the original rates are reached.
+
+#### Params:
+
+* **Object** *options*
+
+#### Example
+```javascript
+ajaxLimited.slowStart({
+  get: { // Slows down get to this rate
+    bucketSize: 9,
+    tokensPerInterval: 9
+  },
+  'put,patch,post,delete': { // Slows down post, put, patch, delete to this rate
+    bucketSize: 9,
+    tokensPerInterval: 0,
+  },
+  transitionTime: 9000, // Takes 9s to reach normal speed
+  interval: 3000        // Updates speed every 3s
+});
+```
