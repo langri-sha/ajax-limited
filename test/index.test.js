@@ -20,7 +20,7 @@ chai.should();
 var DEFAULT_OPTIONS = {
   bucketSize: 9,
   tokensPerInterval: 9,
-  interval: 3000,
+  interval: 300,
 };
 
 var AjaxLimited = ajaxLimited.AjaxLimited;
@@ -107,7 +107,7 @@ describe('AjaxLimited', function() {
         }
 
         var _this = this;
-        return Promise.delay(3000).then(function() {
+        return Promise.delay(300).then(function() {
           _this.stats.requests.should.be.below(10);
           _this.ajaxLimited.bucket.tokensPerInterval = 10000;
           return Promise.all(ps);
@@ -119,7 +119,7 @@ describe('AjaxLimited', function() {
         var ps = [];
         var p;
         var start = new Date();
-        var timer = Promise.delay(3000);
+        var timer = Promise.delay(300);
         this.ajaxLimited.get({
           bucketSize: 2,
           tokensPerInterval: 2,
@@ -140,7 +140,7 @@ describe('AjaxLimited', function() {
 
         return timer.then(function() {
           var elapsed = new Date().getTime() - start;
-          var ncycles = elapsed / 3000;
+          var ncycles = elapsed / 300;
           _this.stats.requests.should.be.below(10 * ncycles);
           _this.stats.getRequests.should.be.below(3 * ncycles);
           _this.ajaxLimited.bucket.tokensPerInterval = 10000;
