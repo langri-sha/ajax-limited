@@ -7,6 +7,7 @@ var _ = require('lodash');
 var chai = require('chai');
 var limiter = require('limiter');
 var makeStub = require('mocha-make-stub');
+var sinon = require('sinon');
 var ajaxLimited = require('..');
 
 if(!process.browser) {
@@ -97,6 +98,39 @@ describe('AjaxLimited([options])', function() {
       this.ajaxLimited.bucket.tokensPerInterval
         .should.equal(DEFAULT_OPTIONS.tokensPerInterval);
       this.ajaxLimited.bucket.bucketSize.should.equal(0);
+    });
+  });
+
+  describe('.prototype.ajax', function() {
+    it('removes tokens from the root bucket before triggering AJAX', function() {
+      var _this = this;
+      var ajaxSpy = sinon.spy();
+      var target = { ajax: ajaxSpy, };
+      this.ajaxLimited.configure(target, DEFAULT_OPTIONS);
+      this.ajaxLimited.bucket.content = 1;
+      return this.ajaxLimited.ajax({type: 'get'}).then(function() {
+        Math.floor(_this.ajaxLimited.bucket.content).should.equal(0);
+        ajaxSpy.called.should.be.ok;
+      });
+    });
+
+    it('removes tokens from child buckets if applicable', function() {
+      var _this = this;
+      var ajaxSpy = sinon.spy();
+      var target = { ajax: ajaxSpy, };
+      this.ajaxLimited.configure(target, DEFAULT_OPTIONS);
+      this.ajaxLimited.get({
+        bucketSize: 1,
+        tokensPerInterval: 3,
+      });
+
+      this.ajaxLimited.bucket.content = 2;
+      this.ajaxLimited.childBuckets.get.content = 1;
+      return this.ajaxLimited.ajax({type: 'get'}).then(function() {
+        Math.floor(_this.ajaxLimited.bucket.content).should.equal(1);
+        Math.floor(_this.ajaxLimited.childBuckets.get.content).should.equal(0);
+        ajaxSpy.called.should.be.ok;
+      });
     });
   });
 

@@ -23,7 +23,8 @@
     "mocha-make-stub": "^2.3.2",
     "mocha-spec-cov-alt": "^0.3.0",
     "najax": "^0.1.5",
-    "phantomjs-polyfill": "0.0.1"
+    "phantomjs-polyfill": "0.0.1",
+    "sinon": "^1.15.3"
   },
   "config": {
     "blanket": {
