@@ -88,6 +88,16 @@ describe('AjaxLimited([options])', function() {
       this.ajaxLimited.childBuckets.get.bucketSize.should.equal(0);
       this.ajaxLimited.childBuckets.get.should.eql(oldBucket);
     });
+
+    it('handles updating the root bucket', function() {
+      this.ajaxLimited.configure($, DEFAULT_OPTIONS);
+      var oldBucket = this.ajaxLimited.registerBucket('all', DEFAULT_OPTIONS);
+      this.ajaxLimited.registerBucket('all', {bucketSize: 0});
+      this.ajaxLimited.bucket.should.eql(oldBucket);
+      this.ajaxLimited.bucket.tokensPerInterval
+        .should.equal(DEFAULT_OPTIONS.tokensPerInterval);
+      this.ajaxLimited.bucket.bucketSize.should.equal(0);
+    });
   });
 
   describe('integration tests', function() {
