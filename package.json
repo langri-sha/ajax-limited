@@ -10,6 +10,7 @@
   },
   "author": "Pedro Tacla Yamada",
   "dependencies": {
+    "bluebird": "^2.9.30",
     "limiter": "^1.0.5",
     "lodash": "^3.9.3"
   },
