@@ -5,6 +5,7 @@ var $ = require('jquery');
 var Promise = require('bluebird');
 var _ = require('lodash');
 var chai = require('chai');
+var limiter = require('limiter');
 var makeStub = require('mocha-make-stub');
 var ajaxLimited = require('..');
 
@@ -25,13 +26,23 @@ var DEFAULT_OPTIONS = {
 
 var AjaxLimited = ajaxLimited.AjaxLimited;
 
-describe('AjaxLimited', function() {
+describe('AjaxLimited([options])', function() {
   beforeEach(function() {
     this.ajaxLimited = new AjaxLimited();
   });
 
   afterEach(function() {
     this.ajaxLimited.restore();
+  });
+
+  it("doesn't throw", function() {
+    new AjaxLimited();
+  });
+
+  it('initializes the root bucket if options are provided', function() {
+    var a = new AjaxLimited(DEFAULT_OPTIONS);
+    a.should.have.property('bucket');
+    a.bucket.should.be.instanceof(limiter.TokenBucket);
   });
 
   describe('.prototype.getBucketFor(url, settings)', function() {
@@ -55,6 +66,27 @@ describe('AjaxLimited', function() {
 
       bucket.should.not.eql(this.ajaxLimited.bucket);
       bucket.parentBucket.should.eql(this.ajaxLimited.bucket);
+    });
+  });
+
+  describe('.prototype.registerBucket(method, options)', function() {
+    it("creates new buckets when they don't exist yet", function() {
+      this.ajaxLimited.registerBucket('get', DEFAULT_OPTIONS);
+      this.ajaxLimited.childBuckets.should.have.property('get');
+      this.ajaxLimited.childBuckets.get.bucketSize.should.equal(DEFAULT_OPTIONS.bucketSize);
+    });
+
+    it("updates existing buckets, if they're already there", function() {
+      this.ajaxLimited.configure($, DEFAULT_OPTIONS);
+      var oldBucket = this.ajaxLimited.registerBucket('get', DEFAULT_OPTIONS);
+      this.ajaxLimited.registerBucket('get', {bucketSize: 0});
+      this.ajaxLimited.childBuckets.should.have.property('get');
+      this.ajaxLimited.childBuckets.get.parentBucket
+        .should.equal(this.ajaxLimited.bucket);
+      this.ajaxLimited.childBuckets.get.tokensPerInterval
+        .should.equal(DEFAULT_OPTIONS.tokensPerInterval);
+      this.ajaxLimited.childBuckets.get.bucketSize.should.equal(0);
+      this.ajaxLimited.childBuckets.get.should.eql(oldBucket);
     });
   });
 
