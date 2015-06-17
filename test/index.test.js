@@ -34,10 +34,10 @@ describe('AjaxLimited', function() {
     this.ajaxLimited.restore();
   });
 
-  describe('.prototype._getBucketFor(url, settings)', function() {
+  describe('.prototype.getBucketFor(url, settings)', function() {
     it('returns the global bucket when there\'re no childs', function() {
       this.ajaxLimited.configure($, DEFAULT_OPTIONS);
-      this.ajaxLimited._getBucketFor(['/', {}])
+      this.ajaxLimited.getBucketFor(['/', {}])
         .should.eql(this.ajaxLimited.bucket);
     });
 
@@ -48,7 +48,7 @@ describe('AjaxLimited', function() {
         bucketSize: 3
       }, DEFAULT_OPTIONS));
 
-      var bucket = this.ajaxLimited._getBucketFor([{
+      var bucket = this.ajaxLimited.getBucketFor([{
         type: 'GET',
         url: 'https://localhost:3000',
       }]);
@@ -144,7 +144,7 @@ describe('AjaxLimited', function() {
           _this.stats.requests.should.be.below(10 * ncycles);
           _this.stats.getRequests.should.be.below(3 * ncycles);
           _this.ajaxLimited.bucket.tokensPerInterval = 10000;
-          _this.ajaxLimited._routes.get.tokensPerInterval = 10000;
+          _this.ajaxLimited.childBuckets.get.tokensPerInterval = 10000;
           return Promise.all(ps);
         });
       });
