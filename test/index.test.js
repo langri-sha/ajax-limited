@@ -101,6 +101,46 @@ describe('AjaxLimited([options])', function() {
     });
   });
 
+  describe('.prototype.slowStart', function() {
+    it('slowly transitions from one bucket state to another', function() {
+      var _this = this;
+
+      this.ajaxLimited.configure($, {
+        bucketSize: 10,
+        tokensPerInterval: 10,
+        interval: 200,
+      });
+
+      this.ajaxLimited.bucket.bucketSize.should.equal(10);
+      this.ajaxLimited.bucket.tokensPerInterval.should.equal(10);
+      this.ajaxLimited.bucket.interval.should.equal(200);
+
+      this.ajaxLimited.slowStart({
+        all: {
+          bucketSize: 0,
+          tokensPerInterval: 1,
+        },
+        transitionTime: 1000,
+        interval: 500,
+      });
+
+      this.ajaxLimited.bucket.bucketSize.should.equal(0);
+      this.ajaxLimited.bucket.tokensPerInterval.should.equal(1);
+      this.ajaxLimited.bucket.interval.should.equal(200);
+
+      return Promise.delay(100).then(function() {
+        _this.ajaxLimited.bucket.bucketSize.should.equal(0);
+        _this.ajaxLimited.bucket.tokensPerInterval.should.equal(1);
+        _this.ajaxLimited.bucket.interval.should.equal(200);
+        return Promise.delay(500).then(function() {
+          _this.ajaxLimited.bucket.bucketSize.should.not.equal(0);
+          _this.ajaxLimited.bucket.tokensPerInterval.should.equal(6);
+          _this.ajaxLimited.bucket.interval.should.equal(200);
+        });
+      });
+    });
+  });
+
   describe('.prototype.ajax', function() {
     it('removes tokens from the root bucket before triggering AJAX', function() {
       var _this = this;
