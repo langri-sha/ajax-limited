@@ -2,6 +2,11 @@ ajax-limited
 ============
 A rate-limited version of $.ajax with support for slow start on wakeup.
 
+## Installing
+```
+npm install --save ajax-limited
+```
+
 ## Usage
 ```javascript
 var $ = require('jquery');
