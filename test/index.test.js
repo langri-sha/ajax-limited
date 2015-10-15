@@ -199,6 +199,8 @@ describe('AjaxLimited([options])', function() {
         this.stats.requests++;
         var method = (options.type || options.method || 'get').toLowerCase();
         this.stats[method + 'Requests']++;
+        if(typeof options.success === 'function') options.success()
+        if(typeof options.complete === 'function') options.complete()
         return Promise.resolve({});
       }, true);
 
@@ -264,6 +266,53 @@ describe('AjaxLimited([options])', function() {
           return Promise.all(ps);
         });
       });
+      it('success, and complete handlers are called in order', function() {
+        var success = sinon.spy();
+        var complete = sinon.spy(function() {
+          success.calledOnce.should.be.true;
+        });
+        return $.ajax('http://localhost:3000', {
+          success: success,
+          complete: complete
+        }).then(function() {
+          complete.calledOnce.should.be.true;
+        });
+      });
+    });
+
+    describe('when AJAX is unsuccessful', function() {
+
+      afterEach(function() {
+        this.ajaxLimited.restore();
+      });
+
+      makeStub.each($, 'ajax', function(url, options) {
+        if(!options) {
+          options = url || {};
+          url = options.url;
+        }
+
+        if(typeof options.error === 'function') options.error()
+        if(typeof options.complete === 'function') options.complete()
+        return Promise.reject(new Error("AJAX Failed"));
+
+      }, true);
+
+      it('error, and complete handlers are called in order', function() {
+        var error = sinon.spy();
+        var complete = sinon.spy(function() {
+          error.calledOnce.should.be.true;
+        });
+        return $.ajax('http://localhost:3000', {
+          error: error,
+          complete: complete
+        }).then(function() {
+          throw new Error("Ajax success handler should not be called when ajax fails");
+        }, function() {
+          complete.calledOnce.should.be.true;
+        });
+      });
+
     });
   });
 });
