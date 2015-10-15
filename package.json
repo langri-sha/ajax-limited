@@ -3,6 +3,7 @@
   "version": "1.1.0",
   "description": "A rate-limited version of $.ajax with support for slow start on wakeup.",
   "main": "lib/index.js",
+  "license": "See LICENSE",
   "scripts": {
     "test": "mocha --require blanket -R mocha-spec-cov-alt",
     "browser-test": "browserify-test",
