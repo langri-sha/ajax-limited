@@ -1,6 +1,6 @@
 {
   "name": "ajax-limited",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A rate-limited version of $.ajax with support for slow start on wakeup.",
   "main": "lib/index.js",
   "license": "See LICENSE",
