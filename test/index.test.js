@@ -199,8 +199,8 @@ describe('AjaxLimited([options])', function() {
         this.stats.requests++;
         var method = (options.type || options.method || 'get').toLowerCase();
         this.stats[method + 'Requests']++;
-        if(typeof options.success === 'function') options.success()
-        if(typeof options.complete === 'function') options.complete()
+        if(typeof options.success === 'function') options.success();
+        if(typeof options.complete === 'function') options.complete();
         return Promise.resolve({});
       }, true);
 
@@ -266,6 +266,7 @@ describe('AjaxLimited([options])', function() {
           return Promise.all(ps);
         });
       });
+
       it('success, and complete handlers are called in order', function() {
         var success = sinon.spy();
         var complete = sinon.spy(function() {
@@ -281,7 +282,6 @@ describe('AjaxLimited([options])', function() {
     });
 
     describe('when AJAX is unsuccessful', function() {
-
       afterEach(function() {
         this.ajaxLimited.restore();
       });
@@ -292,10 +292,9 @@ describe('AjaxLimited([options])', function() {
           url = options.url;
         }
 
-        if(typeof options.error === 'function') options.error()
-        if(typeof options.complete === 'function') options.complete()
+        if(typeof options.error === 'function') options.error();
+        if(typeof options.complete === 'function') options.complete();
         return Promise.reject(new Error("AJAX Failed"));
-
       }, true);
 
       it('error, and complete handlers are called in order', function() {
@@ -303,6 +302,7 @@ describe('AjaxLimited([options])', function() {
         var complete = sinon.spy(function() {
           error.calledOnce.should.be.true;
         });
+
         return $.ajax('http://localhost:3000', {
           error: error,
           complete: complete
@@ -312,7 +312,6 @@ describe('AjaxLimited([options])', function() {
           complete.calledOnce.should.be.true;
         });
       });
-
     });
   });
 });
