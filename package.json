@@ -39,7 +39,8 @@
       ],
       "spec-cov": {
         "threshold": 0,
-        "localThreshold": 0
+        "localThreshold": 0,
+        "lcovOutput": "lcov"
       }
     }
   }

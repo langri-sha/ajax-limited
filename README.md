@@ -1,5 +1,7 @@
 ajax-limited
 ============
+[![Build Status](https://travis-ci.org/toggl/ajax-limited.svg)](https://travis-ci.org/toggl/ajax-limited)
+- - -
 A rate-limited version of $.ajax with support for slow start on wakeup.
 
 ## Installing
